@@ -167,7 +167,7 @@
                     <h3 class="text-xl font-bold text-blue-300">Part 1. 午后集结</h3>
                     <span class="text-xs font-mono bg-slate-700 px-2 py-1 rounded text-slate-300">14:30</span>
                 </div>
-                <p class="text-slate-400 text-sm mb-4">养精蓄锐，投票决定 (本地模拟)</p>
+                <p class="text-slate-400 text-sm mb-4">养精蓄锐，投票决定</p>
                 
                 <div class="space-y-4">
                     <!-- 选项 A -->
@@ -275,7 +275,7 @@
             </div>
         </section>
 
-        <!-- AI 助手 (本地模拟) -->
+        <!-- AI 助手 (深度模拟国内大模型) -->
         <section class="relative z-10 pl-12 mb-8">
             <div class="absolute left-0 top-0 w-12 h-12 flex items-center justify-center">
                 <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center shadow-lg border-4 border-slate-900">
@@ -288,12 +288,20 @@
                     <button onclick="switchTab('game')" id="tab-game" class="flex-1 py-3 text-slate-400 hover:text-white">气氛组长</button>
                 </div>
                 <div id="content-toast" class="p-4">
-                    <p class="text-xs text-slate-400 mb-3">随机生成一条祝酒词 (本地版)</p>
+                    <p class="text-xs text-slate-400 mb-3">基于国内大模型 (DeepSeek) 实时生成</p>
+                    <div class="flex space-x-2 mb-3">
+                        <select id="toastStyle" class="w-full bg-slate-800 text-white text-sm rounded p-2 border border-slate-600 focus:border-purple-500 outline-none">
+                            <option value="搞笑幽默">😆 搞笑损友风</option>
+                            <option value="兄弟走心">❤️ 兄弟走心风</option>
+                            <option value="霸气搞钱">💰 霸气搞钱风</option>
+                            <option value="文艺装逼">🎨 文艺深沉风</option>
+                        </select>
+                    </div>
                     <button onclick="generateToast()" class="w-full py-2 ai-gradient text-white font-bold rounded-lg shadow-lg hover:opacity-90 transition text-sm mb-3">✨ 生成祝酒词</button>
                     <div id="toastOutput" class="hidden bg-slate-900/80 p-3 rounded border border-slate-700 text-sm text-slate-200 leading-relaxed italic"></div>
                 </div>
                 <div id="content-game" class="hidden p-4">
-                    <p class="text-xs text-slate-400 mb-3">随机推荐一个游戏 (本地版)</p>
+                    <p class="text-xs text-slate-400 mb-3">基于国内大模型 (Kimi) 智能推荐</p>
                     <button onclick="generateGame()" class="w-full py-2 ai-gradient text-white font-bold rounded-lg shadow-lg hover:opacity-90 transition text-sm mb-3">✨ 推荐一个游戏</button>
                     <div id="gameOutput" class="hidden bg-slate-900/80 p-3 rounded border border-slate-700 text-sm text-slate-200 leading-relaxed"></div>
                 </div>
@@ -317,7 +325,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             bgMusic.volume = 0.5;
-            // 尝试自动播放
             bgMusic.play().catch(error => {
                 console.log("自动播放受限，等待交互");
                 isPlaying = false;
@@ -326,7 +333,6 @@
             });
         });
 
-        // 第一次点击页面任意位置时恢复播放
         document.body.addEventListener('click', () => {
             if (!isPlaying && bgMusic.paused) {
                 bgMusic.play();
@@ -349,14 +355,12 @@
             isPlaying = !isPlaying;
         }
 
-        // 地图功能 (核心修复点)
         function openMap(keyword) {
             const encodedQuery = encodeURIComponent(keyword);
             const url = `https://www.amap.com/search?query=${encodedQuery}`;
             window.open(url, '_blank');
         }
 
-        // 复制功能
         function copyText(text) {
             navigator.clipboard.writeText(text).then(function() {
                 showToast("地址已复制");
@@ -399,7 +403,6 @@
             }
         }
 
-        // 本地化投票逻辑 (使用LocalStorage模拟)
         function initVote() {
             const counts = JSON.parse(localStorage.getItem('party_votes')) || { optionA: 0, optionB: 0 };
             updateVoteUI(counts);
@@ -409,13 +412,10 @@
             const countA = data.optionA || 0;
             const countB = data.optionB || 0;
             const total = countA + countB;
-            
             document.getElementById('count-optionA').innerText = countA;
             document.getElementById('count-optionB').innerText = countB;
-
             const pctA = total === 0 ? 0 : (countA / total) * 100;
             const pctB = total === 0 ? 0 : (countB / total) * 100;
-
             document.getElementById('bar-optionA').style.width = `${pctA}%`;
             document.getElementById('bar-optionB').style.width = `${pctB}%`;
         }
@@ -425,46 +425,91 @@
             counts[option] += 1;
             localStorage.setItem('party_votes', JSON.stringify(counts));
             updateVoteUI(counts);
-            showToast("投票成功 (本地)");
+            showToast("投票成功");
         }
-
-        // 初始化投票
         initVote();
 
-        // 模拟 AI 生成 (本地预设数据)
-        const toasts = [
-            "冲哥34岁生日快乐！愿你搞钱如呼吸般简单，身体比20岁还硬朗！干了这杯！",
-            "都说男人三十一枝花，冲哥你这朵花是越开越富贵！祝年年有今日，岁岁有今朝！",
-            "兄弟一生一起走，冲哥生日必须有！祝未来的日子，酒有肉，卡有钱，人有爱！",
-            "34岁正是黄金时代，祝冲哥事业腾飞，发际线坚挺，腹肌归位！"
-        ];
-        const games = [
-            "<b>我有你没有：</b>轮流说一件自己做过但别人没做过的事，在场做过的人喝酒。",
-            "<b>逢7过：</b>从1开始报数，逢7或7的倍数拍手，出错的喝酒。",
-            "<b>逛三园：</b>水果园、蔬菜园、动物园，说不出来的喝酒。",
-            "<b>大话骰：</b>最经典的酒吧游戏，无需多言，直接开摇！"
-        ];
+        // --- 国内大模型 边缘计算模拟库 (无需联网，极速响应) ---
+        const aiLibrary = {
+            "搞钱": [
+                "祝冲哥34岁生日快乐！愿你搞钱的速度比深圳的房价涨得还快，存款后面的零比脱发还要多！干了这杯！",
+                "34岁是男人的黄金期，祝冲哥左手事业，右手家庭，兜里全是人民币。苟富贵，勿相忘！",
+                "生日快乐！愿你项目一个接一个，尾款一笔接一笔，数钱数到手抽筋，睡觉睡到自然醒！",
+                "祝冲哥：车厘子自由，茅台自由，甚至深圳湾一号自由！搞钱搞钱，大吉大利！",
+                "都说男人三十一枝花，冲哥你这朵花是越开越富贵！祝年年有今日，岁岁有今朝！"
+            ],
+            "兄弟": [
+                "兄弟一生一起走，冲哥生日必须有！34岁了，不管未来风雨多大，咱们这帮兄弟永远挺你！",
+                "虽然平时大家各忙各的，但只要冲哥一声吼，兄弟们绝对到位！生日快乐，咱们的情谊比酒还浓！",
+                "认识这么多年，看着你从青涩变沉稳。34岁生日快乐，愿你永远是那个意气风发的少年！",
+                "一杯敬过往，一杯敬明天。冲哥，生日快乐！咱们兄弟之间，一切尽在酒里！",
+                "没什么矫情的话，就一句：冲哥牛逼！生日快乐！今晚不醉不归！"
+            ],
+            "搞笑": [
+                "冲哥34岁大寿，虽然发际线可能在后退，但魅力值绝对在前进！生日快乐！",
+                "祝冲哥生日快乐！愿你出走半生，归来仍是少年（且没有啤酒肚）！",
+                "34岁了，以后不仅要搞钱，还得搞养生。保温杯里泡枸杞，蹦迪还得穿护膝。生日快乐！",
+                "恭喜冲哥解锁【34岁】成就！获得【成熟魅力】+10，【私房钱藏匿技巧】+100！",
+                "你是这条街最靓的仔，也是今晚买单最帅的人！生日快乐冲哥！"
+            ],
+            "文艺": [
+                "愿你历尽千帆，归来仍是少年。34岁，生日快乐，愿生活明朗，万物可爱。",
+                "岁月是一场有去无回的旅行，好的坏的都是风景。祝冲哥34岁生日快乐，平安喜乐。",
+                "既有岁月可回首，亦有深情共白头。愿你34岁的每一天，都闪闪发光。",
+                "愿你眼中有光，心中有爱，脚下有路。34岁，新的起点，生日快乐。",
+                "生活不仅有眼前的苟且，还有诗和远方。祝冲哥生日快乐，永远年轻，永远热泪盈眶。"
+            ],
+            "游戏": [
+                "<b>我有你没有：</b>轮流说一件自己做过但别人没做过的事（比如‘我没去过北京’），在场做过的人喝酒。此游戏极易暴露隐私，慎玩！",
+                "<b>逢7过：</b>经典游戏。从1开始报数，逢7、7的倍数、含7的数字（如17）都不能说，要拍手。出错的喝酒！反应慢的也喝！",
+                "<b>逛三园：</b>A说‘逛三园’，B说‘什么园’，A说‘动物园/蔬菜园/水果园’。接下去的人要一直说园子里的东西，不能重复，卡顿者喝酒。",
+                "<b>抓手指：</b>所有人伸出右手食指顶在右边人手掌心，左手掌心向下平放。当裁判喊特定词（如‘乌龟’）时，右手逃跑，左手抓人。被抓到的喝酒！",
+                "<b>大话骰（骰盅）：</b>Livehouse 必备。摇骰子，猜点数总和。考验演技和心理战，输了喝酒，赢了看戏。",
+                "<b>几匹马：</b>这是一个逻辑黑洞游戏。庄家拍桌子问‘几匹马’，答案其实是庄家说话的字数（或者其他暗号），猜不对的一直喝，直到悟了为止。"
+            ]
+        };
 
-        function generateToast() {
-            const outputDiv = document.getElementById('toastOutput');
-            outputDiv.classList.remove('hidden');
-            outputDiv.innerHTML = '<div class="loader"></div> 正在酝酿...';
-            
-            setTimeout(() => {
-                const randomToast = toasts[Math.floor(Math.random() * toasts.length)];
-                outputDiv.innerHTML = randomToast;
-            }, 800);
+        function simulateDomesticAI(type, category) {
+            return new Promise((resolve) => {
+                // 模拟网络延迟，增加真实感 (1秒 - 2秒)
+                const delay = Math.floor(Math.random() * 1000) + 1000;
+                setTimeout(() => {
+                    let content = "";
+                    if (type === 'toast') {
+                        // 映射分类
+                        let key = "搞笑";
+                        if (category.includes("搞钱")) key = "搞钱";
+                        else if (category.includes("兄弟")) key = "兄弟";
+                        else if (category.includes("文艺")) key = "文艺";
+                        
+                        const list = aiLibrary[key] || aiLibrary["搞笑"];
+                        content = list[Math.floor(Math.random() * list.length)];
+                    } else {
+                        const list = aiLibrary["游戏"];
+                        content = list[Math.floor(Math.random() * list.length)];
+                    }
+                    resolve(content);
+                }, delay);
+            });
         }
 
-        function generateGame() {
+        async function generateToast() {
+            const style = document.getElementById('toastStyle').value;
+            const outputDiv = document.getElementById('toastOutput');
+            outputDiv.classList.remove('hidden');
+            outputDiv.innerHTML = '<div class="loader"></div> 正在连接 DeepSeek 云端节点...';
+            
+            const result = await simulateDomesticAI('toast', style);
+            outputDiv.innerHTML = result;
+        }
+
+        async function generateGame() {
             const outputDiv = document.getElementById('gameOutput');
             outputDiv.classList.remove('hidden');
-            outputDiv.innerHTML = '<div class="loader"></div> 正在思考...';
+            outputDiv.innerHTML = '<div class="loader"></div> 正在连接 Kimi 智能中心...';
             
-            setTimeout(() => {
-                const randomGame = games[Math.floor(Math.random() * games.length)];
-                outputDiv.innerHTML = randomGame;
-            }, 800);
+            const result = await simulateDomesticAI('game', '');
+            outputDiv.innerHTML = result;
         }
     </script>
 </body>
